@@ -1821,8 +1821,12 @@ static WYPopoverTheme *defaultTheme_ = nil;
     {
         CGSize windowSize = [[UIApplication sharedApplication] keyWindow].bounds.size;
         
-        UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-       // UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+        // UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+
+        // change for iOS 8 - dimensions now return as portrait for any orientation
+        UIInterfaceOrientation orientation = WY_IS_IOS_GREATER_THAN_OR_EQUAL_TO(@"8.0")
+                                                ? UIInterfaceOrientationMaskPortrait
+                                                : [[UIApplication sharedApplication] statusBarOrientation];
         
         result = CGSizeMake(320, UIInterfaceOrientationIsLandscape(orientation) ? windowSize.width : windowSize.height);
     }
@@ -2133,9 +2137,14 @@ static WYPopoverTheme *defaultTheme_ = nil;
 {
     CGAffineTransform transform = backgroundView.transform;
     
-    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    //UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
     //UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-
+    
+    // change for iOS 8 - dimensions return for portrait in any orientation
+    UIInterfaceOrientation orientation = WY_IS_IOS_GREATER_THAN_OR_EQUAL_TO(@"8.0")
+                                            ? UIInterfaceOrientationMaskPortrait
+                                            : [[UIApplication sharedApplication] statusBarOrientation];
+    
     CGSize containerViewSize = backgroundView.frame.size;
     
     if (backgroundView.arrowHeight > 0)
@@ -2232,7 +2241,12 @@ static WYPopoverTheme *defaultTheme_ = nil;
 {
     CGRect savedContainerFrame = backgroundView.frame;
     
-    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    //UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+    // change for iOS 8 - dimensions return for portrait in any orientation
+    UIInterfaceOrientation orientation = WY_IS_IOS_GREATER_THAN_OR_EQUAL_TO(@"8.0")
+                                            ? UIInterfaceOrientationMaskPortrait
+                                            : [[UIApplication sharedApplication] statusBarOrientation];
     
     CGSize contentViewSize = self.popoverContentSize;
     CGSize minContainerSize = WY_POPOVER_MIN_SIZE;
@@ -2538,6 +2552,12 @@ static WYPopoverTheme *defaultTheme_ = nil;
     CGPoint containerOrigin = containerFrame.origin;
     
     backgroundView.transform = CGAffineTransformMakeRotation(WYInterfaceOrientationAngleOfOrientation(orientation));
+    
+    // iOS 8 - hack!. backgroundView including arrow and content, has been rotated, so rotate the contentView back again
+    if (WY_IS_IOS_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        backgroundView.contentView.transform = CGAffineTransformMakeRotation(WYInterfaceOrientationAngleOfOrientation(orientation));
+    }
     
     containerFrame = backgroundView.frame;
     
@@ -2921,7 +2941,12 @@ CGRect CGRectIntegralScaledEx(CGRect rect, CGFloat scale)
           arrowHeight:(CGFloat)arrowHeight
        arrowDirection:(WYPopoverArrowDirection)arrowDirection
 {
-    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    // UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+    // change for iOS 8 - dimensions are now returned as portrait for any orientation
+    UIInterfaceOrientation orientation = WY_IS_IOS_GREATER_THAN_OR_EQUAL_TO(@"8.0")
+                                            ? UIInterfaceOrientationMaskPortrait
+                                            : [[UIApplication sharedApplication] statusBarOrientation];
     
     CGRect viewFrame = [aView convertRect:aRect toView:nil];
     viewFrame = WYRectInWindowBounds(viewFrame, orientation);
@@ -3011,15 +3036,20 @@ static NSString* WYStringFromOrientation(NSInteger orientation) {
 */
 
 static CGFloat WYStatusBarHeight() {
-    UIInterfaceOrientation orienation = [[UIApplication sharedApplication] statusBarOrientation];
+    //UIInterfaceOrientation orienation = [[UIApplication sharedApplication] statusBarOrientation];
     //UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    
+    // change for iOS 8 - dimensions are now returned as portrait for any orientation
+    UIInterfaceOrientation orientation = WY_IS_IOS_GREATER_THAN_OR_EQUAL_TO(@"8.0")
+                                            ? UIInterfaceOrientationMaskPortrait
+                                            : [[UIApplication sharedApplication] statusBarOrientation];
     
     CGFloat statusBarHeight = 0;
     {
         CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
         statusBarHeight = statusBarFrame.size.height;
         
-        if (UIInterfaceOrientationIsLandscape(orienation))
+        if (UIInterfaceOrientationIsLandscape(orientation))
         {
             statusBarHeight = statusBarFrame.size.width;
         }
@@ -3030,6 +3060,7 @@ static CGFloat WYStatusBarHeight() {
 
 static CGFloat WYInterfaceOrientationAngleOfOrientation(UIInterfaceOrientation orientation)
 {
+//    return 0.0;
     CGFloat angle;
     
     switch (orientation)
